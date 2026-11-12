@@ -468,6 +468,9 @@ select.fld option{background:#171717}
 
 <script src="/ui.js"></script>
 <script>
+/* táctil: evita doble toque en móvil (teclado abierto / zoom) */
+(function(){const st=document.createElement('style');st.textContent='button,.bt,.opt,.qb,a,select,input,textarea{touch-action:manipulation;-webkit-tap-highlight-color:transparent}';document.head.appendChild(st);
+ document.addEventListener('mousedown',e=>{const b=e.target.closest&&e.target.closest('button');if(b&&!b.closest('textarea'))e.preventDefault();},true);})();
 /* ========= ESTADO ========= */
 let SET = {}, ZONES = [], CATS = [], REV = { count: 0, avg: 0 };
 async function api(path, opts) {
@@ -568,7 +571,7 @@ function setupTickets() { document.querySelectorAll('.ticket[data-item]').forEac
 let cur = null;
 function openItem(id) {
   const it = itemById(id); if (!it || !it.available) return;
-  cur = { id, it, size: 0, meat: SET.meats.includes('Mixto') ? 'Mixto' : SET.meats[0], extra: false, sauce: SET.sauces[0], drink: SET.drinks[0], qty: 1, notes: '' };
+  cur = { id, it, size: 0, meat: SET.meats.includes('Mixto') ? 'Mixto' : SET.meats[0], extra: false, sauce: [], drink: SET.drinks[0], qty: 1, notes: '' };
   renderItem(); show('itemModal');
 }
 const curUnit = () => unitOf({ id: cur.id, size: cur.size, extra: cur.extra });
@@ -584,7 +587,7 @@ function renderItem() {
    ${it.sizes && it.sizes.length ? group('TAMAÑO', 'size', it.sizes) : ''}
    ${o.meat ? group('CARNE', 'meat', SET.meats) : ''}
    ${o.extra ? `<div class="glab">EXTRA</div><button class="opt ${cur.extra ? 'sel' : ''}" onclick="cur.extra=!cur.extra;renderItem()">Extra carne / queso (+${eur(SET.extraPrice)})</button>` : ''}
-   ${o.sauce ? group('SALSA', 'sauce', SET.sauces) : ''}
+   ${o.sauce ? `<div class="glab">SALSAS <small style="opacity:.6;font-weight:600">(puedes elegir varias)</small></div><div class="chips">${SET.sauces.map((x, i) => `<button class="opt ${cur.sauce.includes(x) ? 'sel' : ''}" onclick="togSauce(${i})">${cur.sauce.includes(x) ? '✓ ' : ''}${esc(x)}</button>`).join('')}</div>` : ''}
    ${o.drink ? group('BEBIDA', 'drink', SET.drinks) : ''}
    <div class="glab">NOTAS</div><textarea class="fld" rows="1" maxlength="100" placeholder="Sin cebolla, bien hecho…" oninput="cur.notes=this.value">${esc(cur.notes)}</textarea>
    <div class="m-foot">
@@ -592,11 +595,17 @@ function renderItem() {
      <button class="bt bt-yel" onclick="addCur()">Añadir · ${eur(curUnit() * cur.qty)}</button>
    </div>`;
 }
+function togSauce(i) {
+  const x = SET.sauces[i], none = /^sin\b/i.test(x), has = cur.sauce.includes(x);
+  if (has) cur.sauce = cur.sauce.filter(y => y !== x);
+  else cur.sauce = none ? [x] : cur.sauce.filter(y => !/^sin\b/i.test(y)).concat(x);
+  renderItem();
+}
 function pick(k, v) { cur[k] = v; renderItem(); }
 function addCur() {
   const it = cur.it, o = it.opts;
-  const line = { id: cur.id, size: it.sizes && it.sizes.length ? cur.size : 0, meat: o.meat ? cur.meat : '', sauce: o.sauce ? cur.sauce : '', drink: o.drink ? cur.drink : '', extra: o.extra && cur.extra, notes: cur.notes.trim().slice(0, 100), qty: cur.qty };
-  line.key = [line.id, line.size, line.meat, line.sauce, line.drink, line.extra, line.notes].join('|');
+  const line = { id: cur.id, size: it.sizes && it.sizes.length ? cur.size : 0, meat: o.meat ? cur.meat : '', sauce: o.sauce ? cur.sauce.slice() : [], drink: o.drink ? cur.drink : '', extra: o.extra && cur.extra, notes: cur.notes.trim().slice(0, 100), qty: cur.qty };
+  line.key = [line.id, line.size, line.meat, [].concat(line.sauce).join('+'), line.drink, line.extra, line.notes].join('|');
   const r = document.querySelector('#itemBody .modal-art'), rect = r && r.getBoundingClientRect(), t = modelFor(it), img = it.img;
   const ex = cart.find(l => l.key === line.key);
   if (ex) ex.qty = Math.min(20, ex.qty + line.qty); else cart.push(line);
@@ -625,7 +634,7 @@ function lineInfo(l) {
   if (!it.available) return { bad: 'Agotado', it };
   const o = [];
   if (it.sizes && it.sizes.length) o.push((it.sizes[l.size || 0] || it.sizes[0]).label);
-  if (it.opts.meat && l.meat) o.push(l.meat); if (it.opts.sauce && l.sauce) o.push(l.sauce); if (it.opts.drink && l.drink) o.push(l.drink);
+  if (it.opts.meat && l.meat) o.push(l.meat); if (it.opts.sauce && l.sauce && [].concat(l.sauce).length) o.push([].concat(l.sauce).join(' + ')); if (it.opts.drink && l.drink) o.push(l.drink);
   if (it.opts.extra && l.extra) o.push('Extra +' + eur(SET.extraPrice));
   if (l.notes) o.push('“' + l.notes + '”');
   return { it, text: o.join(', '), unit: unitOf(l) };

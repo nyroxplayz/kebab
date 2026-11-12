@@ -1,6 +1,6 @@
 {
   "name": "king-kebab",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "description": "King Kebab - pedidos online + panel (Cloudflare Workers)"
 }
