@@ -673,6 +673,63 @@ function fillZones(keep) {
 ['cName', 'cPhone', 'cAddr'].forEach(id => { const el = $('#' + id); el.value = load('kk_' + id, ''); el.addEventListener('input', () => save('kk_' + id, el.value)); });
 $('#zone').addEventListener('change', e => { save('kk_zone', e.target.value); renderCart(); });
 
+/* ========= AUTOCOMPLETAR DIRECCIÓN (como Google Maps, gratis: Photon / OpenStreetMap) ========= */
+(function () {
+  const inp = $('#cAddr'); if (!inp) return;
+  inp.setAttribute('autocomplete', 'off');
+  const st = document.createElement('style');
+  st.textContent = '.acwrap{position:relative}.aclist{position:fixed;z-index:400;background:#fff;color:#0d0d0d;border:3px solid #0d0d0d;border-radius:14px;box-shadow:4px 4px 0 #0d0d0d;overflow:hidden;display:none}.aclist.on{display:block}.aclist button{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#fff;border:0;border-bottom:2px solid #eee;padding:12px 14px;font:700 14px "Plus Jakarta Sans",system-ui,sans-serif;color:#0d0d0d;cursor:pointer}.aclist button:last-child{border-bottom:0}.aclist button:hover,.aclist button:focus{background:#ffd400}.aclist small{display:block;font-weight:600;opacity:.6;font-size:12px}.aclist .pin{flex:none;font-size:18px}';
+  document.head.appendChild(st);
+  const wrap = document.createElement('div'); wrap.className = 'acwrap';
+  inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
+  const box = document.createElement('div'); box.className = 'aclist'; wrap.appendChild(box);
+  let t, seq = 0, picked = '';
+  const hide = () => box.classList.remove('on');
+  function label(p) {
+    const street = p.street || p.name || '', num = p.housenumber || '';
+    const l1 = (street + (num ? ' ' + num : '')).trim();
+    const l2 = [p.postcode, p.city || p.town || p.village || p.district || p.county].filter(Boolean).join(' ');
+    return { l1, l2 };
+  }
+  async function search(q) {
+    const my = ++seq;
+    try {
+      const u = 'https://photon.komoot.io/api/?limit=7&lang=default&lat=42.4325&lon=-2.4325&bbox=-3.2,41.9,-1.9,42.8&q=' + encodeURIComponent(q + ' Lardero');
+      const r = await fetch(u); if (!r.ok) return hide();
+      const d = await r.json(); if (my !== seq) return;
+      const seen = new Set(), items = [];
+      for (const f of d.features || []) {
+        const p = f.properties || {}; if (p.countrycode && p.countrycode !== 'ES') continue;
+        if (!(p.street || p.name)) continue;
+        const L = label(p); if (!L.l1) continue;
+        const k = L.l1 + '|' + L.l2; if (seen.has(k)) continue; seen.add(k); items.push({ ...L, city: p.city || p.town || p.village || p.district || '' });
+      }
+      if (!items.length) return hide();
+      box.innerHTML = items.map((x, i) => `<button type="button" data-i="${i}"><span class="pin">📍</span><span>${esc(x.l1)}<small>${esc(x.l2)}</small></span></button>`).join('');
+      box._items = items; box.classList.add('on');
+      const R = inp.getBoundingClientRect(); box.style.left = R.left + 'px'; box.style.width = R.width + 'px';
+      if (innerHeight - R.bottom < 280) { box.style.top = 'auto'; box.style.bottom = (innerHeight - R.top + 6) + 'px'; } else { box.style.bottom = 'auto'; box.style.top = (R.bottom + 6) + 'px'; }
+    } catch (e) { hide(); }
+  }
+  inp.addEventListener('input', () => {
+    clearTimeout(t); const q = inp.value.trim();
+    if (q.length < 3 || q === picked) return hide();
+    t = setTimeout(() => search(q), 350);
+  });
+  box.addEventListener('mousedown', e => e.preventDefault());
+  box.addEventListener('click', e => {
+    const b = e.target.closest('button[data-i]'); if (!b) return;
+    const x = box._items[+b.dataset.i]; picked = x.l1 + (x.l2 ? ', ' + x.l2 : '');
+    inp.value = picked; save('kk_cAddr', picked); hide();
+    const z = ZONES.find(z => x.city && z.name.toLowerCase() === x.city.toLowerCase());
+    if (z) { $('#zone').value = z.id; save('kk_zone', z.id); renderCart(); }
+    toast('Añade piso o puerta si hace falta'); inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length);
+  });
+  inp.addEventListener('blur', () => setTimeout(hide, 150));
+  inp.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+})();
+
+
 /* ========= ENVIAR PEDIDO ========= */
 let sending = false;
 async function confirmOrder() {

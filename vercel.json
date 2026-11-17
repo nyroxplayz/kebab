@@ -1,0 +1,11 @@
+{
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/uploads/:name", "destination": "/api/_up/:name" }
+  ],
+  "headers": [
+    { "source": "/admin.html", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }, { "key": "X-Frame-Options", "value": "DENY" }] },
+    { "source": "/(.*).html", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
+  ]
+}
