@@ -32,8 +32,13 @@ export default async (req) => {
   const headers = {}; req.headers.forEach((v, k) => { headers[k.toLowerCase()] = v; });
   const body = ['GET', 'HEAD'].includes(req.method) ? '' : await req.text();
   const ip = headers['x-nf-client-connection-ip'] || (headers['x-forwarded-for'] || '').split(',')[0].trim() || '?';
-  const r = await getApp().handle({ method: req.method, path: url.pathname, query: url.searchParams, headers, body, ip });
-  return new Response(r.body, { status: r.status, headers: r.headers });
+  try {
+    const r = await getApp().handle({ method: req.method, path: url.pathname, query: url.searchParams, headers, body, ip });
+    return new Response(r.body, { status: r.status, headers: r.headers });
+  } catch (e) {
+    console.error('KK error', e && e.stack || e);
+    return new Response(JSON.stringify({ error: 'Error del servidor: ' + String((e && e.message) || e) }), { status: 500, headers: { 'content-type': 'application/json' } });
+  }
 };
 
 export const config = { path: ['/api/*', '/uploads/*'] };
