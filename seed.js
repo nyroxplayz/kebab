@@ -86,14 +86,16 @@ const RAW = [
     ['Ensalada King', 'Lechuga, tomate, cebolla, aceitunas, maíz, zanahoria, atún y trozos de pollo', 4.5, ''],
   ]],
   ['Bebidas', [
-    ['Lata (33cl)', 'Coca-Cola, Fanta, Sprite…', 1.6, 'd'],
+    ['Coca-Cola (lata 33cl)', 'Lata de Coca-Cola', 1.6, ''],
+    ['Fanta Naranja (lata 33cl)', 'Lata de Fanta Naranja', 1.6, ''],
+    ['Nestea Limón (lata 33cl)', 'Lata de Nestea al limón', 1.6, ''],
     ['Agua 50cl', '', 1, ''],
     ['Agua 1,5L', '', 1.5, ''],
-    ['Refresco 2L', 'Para compartir', 3, 'd'],
+    ['Fanta Naranja 2L', 'Para compartir', 3, ''],
   ]],
 ];
 
-const IMG = {"menu-kebab": "c-kebab", "menu-durum": "c-durum", "menu-plato-g": "c-plato", "menu-lahmacum": "c-lahmacum", "menu-alitas": "c-alitas", "menu-nuggets": "c-nuggets", "menu-pops-pollo": "c-pops", "menu-burrito-pollo": "c-burrito", "menu-tiras-de-pollo": "c-tiras", "menu-hamburguesa-de-pollo": "c-hamburguesa", "menu-taco-frances": "c-taco", "oferta-durum-2-personas": "c-of-durum2", "oferta-plato-2-personas": "c-of-plato2", "oferta-martes-2-kebab": "c-of-kebab2", "oferta-martes-2-durum": "c-of-durum2b", "oferta-miercoles": "c-of-pizza2", "pollo-frito-broaster-3-piezas": "broaster6", "pollo-frito-broaster-6-piezas": "broaster3", "pollo-frito-broaster-10-piezas": "broaster10", "kebab": "kebab", "kebab-solo-carne": "kebab", "durum": "durum", "durum-solo-carne": "durum", "lahmacum-kebab": "lahmacum", "lahmacum-kebab-solo-carne": "lahmacum", "hamburguesa-de-pollo": "hamburguesa", "burrito-de-pollo": "burrito", "pizza-margarita": "pizza-queso", "pizza-tres-quesos": "pizza-queso", "pizza-king-especial": "pizza-tabla", "pizza-riojana": "pizza-especial", "pizza-de-atun": "pizza-especial", "pizza-vegetal": "pizza-especial", "pizza-de-kebab": "pizza-tabla", "plato-kebab-familiar": "plato", "plato-kebab-grande": "plato", "plato-kebab-mediano": "plato", "pedrata": "pedrata", "plato-solo-carne": "c-plato-carne", "pollo-asado-con-patatas-y-salsa": "c-pollo-patatas", "pollo-asado-con-patatas-y-ensalada": "c-pollo-ensalada", "medio-pollo-asado": "c-pollo-ensalada", "alitas-x6": "alitas", "nuggets-x8": "nuggets", "samosa-vegetal-y-carne": "samosa", "aros-de-cebolla-x10": "aros", "popcorn-de-pollo-x16": "pops", "taco-frances-de-carne": "t-taco", "taco-frances-de-tiras-de-pollo": "t-taco", "taco-frances-de-nuggets": "t-taco", "taco-frances-de-falafel": "t-taco", "patatas-fritas": "patatas", "patatas-deluxe": "patatas-gajo", "patatas-bravas": "patatas-gajo", "patatas-gratinadas": "patatas-gratin", "ensalada-especial": "ensalada", "ensalada-verde": "ensalada", "ensalada-king": "ensalada", "lata-33cl": "c-bebidas", "agua-50cl": "agua", "agua-1-5l": "agua-grande", "refresco-2l": "refresco"};
+const IMG = {"menu-kebab": "c-kebab", "menu-durum": "c-durum", "menu-plato-g": "c-plato", "menu-lahmacum": "c-lahmacum", "menu-alitas": "c-alitas", "menu-nuggets": "c-nuggets", "menu-pops-pollo": "c-pops", "menu-burrito-pollo": "c-burrito", "menu-tiras-de-pollo": "c-tiras", "menu-hamburguesa-de-pollo": "c-hamburguesa", "menu-taco-frances": "c-taco", "oferta-durum-2-personas": "c-of-durum2", "oferta-plato-2-personas": "c-of-plato2", "oferta-martes-2-kebab": "c-of-kebab2", "oferta-martes-2-durum": "c-of-durum2b", "oferta-miercoles": "c-of-pizza2", "pollo-frito-broaster-3-piezas": "broaster6", "pollo-frito-broaster-6-piezas": "broaster3", "pollo-frito-broaster-10-piezas": "broaster10", "kebab": "kebab", "kebab-solo-carne": "kebab", "durum": "durum", "durum-solo-carne": "durum", "lahmacum-kebab": "lahmacum", "lahmacum-kebab-solo-carne": "lahmacum", "hamburguesa-de-pollo": "hamburguesa", "burrito-de-pollo": "burrito", "pizza-margarita": "pizza-queso", "pizza-tres-quesos": "pizza-queso", "pizza-king-especial": "pizza-tabla", "pizza-riojana": "pizza-especial", "pizza-de-atun": "pizza-especial", "pizza-vegetal": "pizza-especial", "pizza-de-kebab": "pizza-tabla", "plato-kebab-familiar": "plato", "plato-kebab-grande": "plato", "plato-kebab-mediano": "plato", "pedrata": "pedrata", "plato-solo-carne": "c-plato-carne", "pollo-asado-con-patatas-y-salsa": "c-pollo-patatas", "pollo-asado-con-patatas-y-ensalada": "c-pollo-ensalada", "medio-pollo-asado": "c-pollo-ensalada", "alitas-x6": "alitas", "nuggets-x8": "nuggets", "samosa-vegetal-y-carne": "samosa", "aros-de-cebolla-x10": "aros", "popcorn-de-pollo-x16": "pops", "taco-frances-de-carne": "t-taco", "taco-frances-de-tiras-de-pollo": "t-taco", "taco-frances-de-nuggets": "t-taco", "taco-frances-de-falafel": "t-taco", "patatas-fritas": "patatas", "patatas-deluxe": "patatas-gajo", "patatas-bravas": "patatas-gajo", "patatas-gratinadas": "patatas-gratin", "ensalada-especial": "ensalada", "ensalada-verde": "ensalada", "ensalada-king": "ensalada", "coca-cola-lata-33cl": "lata-coca-cola", "fanta-naranja-lata-33cl": "lata-fanta", "nestea-limon-lata-33cl": "lata-nestea", "fanta-naranja-2l": "refresco-fanta-2l", "agua-50cl": "agua", "agua-1-5l": "agua-grande"};
 
 function buildSeed() {
   const used = new Set();
@@ -151,6 +153,13 @@ function fixImgs(cats) {
   for (const c of cats || []) for (const it of c.items || []) {
     if (it.img && !/^\/img\//.test(it.img)) continue;
     const k = IMG[it.id]; if (k) it.img = '/img/' + k + '.webp';
+  }
+  const bc = (cats || []).find(c => c.id === 'bebidas');
+  if (bc && bc.items.some(i => i.id === 'lata-33cl' || i.id === 'refresco-2l')) {  // solo una vez (carta antigua)
+    bc.items = bc.items.filter(i => i.id !== 'lata-33cl' && i.id !== 'refresco-2l');
+    const fresh = buildSeed().cats.find(c => c.id === 'bebidas').items;
+    const have = new Set(bc.items.map(i => i.id));
+    const add = fresh.filter(i => !have.has(i.id)); if (add.length) bc.items = add.filter(i => /lata|2l/.test(i.id)).concat(bc.items);
   }
   for (const c of cats || []) for (const it of c.items || []) for (const z of it.sizes || []) { if (z.label === '33cm') z.label = 'Mediana'; else if (z.label === '40cm') z.label = 'Grande'; }
   return cats;
