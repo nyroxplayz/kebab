@@ -437,7 +437,7 @@ select.fld option{background:#171717}
       <input id="cPhone" class="fld" placeholder="Teléfono *" inputmode="tel" autocomplete="tel">
       <div class="form" id="delFields">
         <select id="zone" class="fld" onchange="renderCart()"></select>
-        <input id="cAddr" class="fld" placeholder="Calle, número, piso *" autocomplete="street-address">
+        <input id="cAddr" class="fld" placeholder="Calle y número de portal / casa *" autocomplete="street-address"><div class="addr2"><input id="cPiso" class="fld" placeholder="Piso" maxlength="12" autocomplete="off"><input id="cPuerta" class="fld" placeholder="Puerta" maxlength="12" autocomplete="off"></div><input id="cTimbre" class="fld" placeholder="Timbre: nombre que pone (opcional)" maxlength="40" autocomplete="off">
       </div>
       <select id="pay" class="fld"></select>
       <textarea id="cNotes" class="fld" rows="2" placeholder="Notas (alergias, timbre, sin cebolla…)"></textarea>
@@ -670,7 +670,7 @@ function fillZones(keep) {
   if (ZONES.some(z => z.id === prev)) sel.value = prev;
   $('#zgrid').innerHTML = ZONES.map((z, i) => `<div class="zc" style="--r:${((i % 2) ? 1 : -1) * (.8 + (i % 3) * .5)}deg"><h3 class="disp">${esc(z.name)}</h3><div class="fee">${eur(z.fee)}</div><div class="min mono">mín. ${eur(z.min)}</div></div>`).join('');
 }
-['cName', 'cPhone', 'cAddr'].forEach(id => { const el = $('#' + id); el.value = load('kk_' + id, ''); el.addEventListener('input', () => save('kk_' + id, el.value)); });
+['cName', 'cPhone', 'cAddr', 'cPiso', 'cPuerta', 'cTimbre'].forEach(id => { const el = $('#' + id); el.value = load('kk_' + id, ''); el.addEventListener('input', () => save('kk_' + id, el.value)); });
 $('#zone').addEventListener('change', e => { save('kk_zone', e.target.value); renderCart(); });
 
 /* ========= AUTOCOMPLETAR DIRECCIÓN (como Google Maps, gratis: Photon / OpenStreetMap) ========= */
@@ -680,6 +680,7 @@ $('#zone').addEventListener('change', e => { save('kk_zone', e.target.value); re
   const st = document.createElement('style');
   st.textContent = '.acwrap{position:relative}.aclist{position:fixed;z-index:400;background:#fff;color:#0d0d0d;border:3px solid #0d0d0d;border-radius:14px;box-shadow:4px 4px 0 #0d0d0d;overflow:hidden;display:none}.aclist.on{display:block}.aclist button{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#fff;border:0;border-bottom:2px solid #eee;padding:12px 14px;font:700 14px "Plus Jakarta Sans",system-ui,sans-serif;color:#0d0d0d;cursor:pointer}.aclist button:last-child{border-bottom:0}.aclist button:hover,.aclist button:focus{background:#ffd400}.aclist small{display:block;font-weight:600;opacity:.6;font-size:12px}.aclist .pin{flex:none;font-size:18px}';
   document.head.appendChild(st);
+  const st2 = document.createElement('style'); st2.textContent = '.addr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}'; document.head.appendChild(st2);
   const wrap = document.createElement('div'); wrap.className = 'acwrap';
   inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
   const box = document.createElement('div'); box.className = 'aclist'; wrap.appendChild(box);
@@ -736,6 +737,7 @@ async function confirmOrder() {
   if (sending) return;
   if (!cart.length) return toast('El pedido está vacío');
   const name = $('#cName').value.trim(), phone = $('#cPhone').value.trim(), addr = $('#cAddr').value.trim(), z = zoneSel();
+  const addr2 = [$('#cPiso').value.trim() && 'Piso ' + $('#cPiso').value.trim(), $('#cPuerta').value.trim() && 'Puerta ' + $('#cPuerta').value.trim(), $('#cTimbre').value.trim() && 'Timbre: ' + $('#cTimbre').value.trim()].filter(Boolean).join(' · ');
   if (name.length < 2) return toast('Escribe tu nombre');
   if (phone.replace(/\D/g, '').length < 9) return toast('Teléfono no válido');
   if (mode === 'delivery' && addr.length < 4) return toast('Escribe tu dirección');
@@ -743,7 +745,7 @@ async function confirmOrder() {
   if (mode === 'delivery' && subTotal() < z.min) return toast(`Mínimo ${eur(z.min)} para ${z.name}`);
   sending = true; const btn = $('#sendBtn'); btn.disabled = true;
   try {
-    const r = await post('/api/orders', { name, phone, mode, zone: z && z.id, addr, pay: $('#pay').value, notes: $('#cNotes').value.trim(),
+    const r = await post('/api/orders', { name, phone, mode, zone: z && z.id, addr, addr2: mode === 'delivery' ? addr2 : '', pay: $('#pay').value, notes: $('#cNotes').value.trim(),
       items: cart.map(l => ({ id: l.id, qty: l.qty, size: l.size, meat: l.meat, sauce: l.sauce, drink: l.drink, extra: l.extra, notes: l.notes })) });
     save('kk_last', { id: r.id, code: r.code, ts: Date.now(), mode });
     cart = []; saveCart(); $('#cNotes').value = ''; closeAll(); showDone(); burst(); initLast();

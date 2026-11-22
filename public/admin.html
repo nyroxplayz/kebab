@@ -310,7 +310,7 @@ function ordCard(o) {
   return `<div class="ord ${newIds.has(o.id) ? 'new' : ''} ${late ? 'late' : ''}">
     <div class="top"><span class="id">${esc(o.id)}<span class="tag">${o.mode === 'pickup' ? 'RECOGIDA' : 'DOMICILIO'}</span></span><span class="m">${hhmm(o.ts)} · ${ago(o.ts)}</span></div>
     <div style="margin-top:5px"><b>${esc(o.name)}</b> · <a href="tel:${esc(o.phone)}">${esc(o.phone)}</a></div>
-    ${o.mode === 'delivery' ? `<div class="m">${I('bike')} ${esc(o.zone)} · <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.addr + ', ' + o.zone + ', La Rioja')}" target="_blank" rel="noopener">${esc(o.addr)}</a></div>` : ''}
+    ${o.mode === 'delivery' ? `<div class="m">${I('bike')} ${esc(o.zone)} · <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.addr + ', ' + o.zone + ', La Rioja')}" target="_blank" rel="noopener">${esc(o.addr)}</a></div>${o.addr2 ? `<div class="m" style="font-weight:900">${I('bike')} ${esc(o.addr2)}</div>` : ''}` : ''}
     <ul>${o.items.map(i => `<li><b>${i.q}x</b> ${esc(i.n)}${i.o ? `<small>${esc(i.o)}</small>` : ''}</li>`).join('')}</ul>
     ${o.notes ? `<div class="nt">Notas: ${esc(o.notes)}</div>` : ''}
     <div class="pay"><span class="m">${esc(o.pay)}${o.mode === 'delivery' ? ` · envío ${eur(o.fee)}` : ''}</span><b>${eur(o.total)}</b></div>
@@ -350,7 +350,7 @@ function ticketHtml(o) {
   <h1>${esc((set.name || 'KING KEBAB').toUpperCase())}</h1><div class="c">${esc(set.address || '')}</div><div class="c">Tel. ${esc(set.phone || '')}</div><div class="hr"></div>
   <div class="c b big">${esc(o.id)}</div><div class="c">${new Date(o.ts).toLocaleString('es-ES', { timeZone: set.tz })}</div><div class="hr"></div>
   <div class="b big">${o.mode === 'delivery' ? '*** A DOMICILIO ***' : '*** RECOGIDA ***'}</div>
-  <div class="b">${esc(o.name)}</div><div>Tel: ${esc(o.phone)}</div>${o.mode === 'delivery' ? `<div class="b">${esc(o.addr)}</div><div>Zona: ${esc(o.zone)}</div>` : ''}
+  <div class="b">${esc(o.name)}</div><div>Tel: ${esc(o.phone)}</div>${o.mode === 'delivery' ? `<div class="b">${esc(o.addr)}</div>${o.addr2 ? `<div class="b">${esc(o.addr2)}</div>` : ''}<div>Zona: ${esc(o.zone)}</div>` : ''}
   <div class="hr"></div>
   ${o.items.map(i => `<div class="b">${i.q}x ${esc(i.n)}</div>${i.o ? `<div class="s">${esc(i.o)}</div>` : ''}${r('', eur(i.p))}`).join('')}
   <div class="hr"></div>${r('Subtotal', eur(o.sub))}${o.mode === 'delivery' ? r('Envío', eur(o.fee)) : ''}<div class="r b big"><span>TOTAL</span><span>${eur(o.total)}</span></div>
