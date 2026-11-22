@@ -39,13 +39,13 @@ const RAW = [
     ['Burrito de Pollo', 'Con lechuga, tomate, cebolla, maíz y salsa', 6.5, 's'],
   ]],
   ['Pizzas', [
-    ['Pizza Margarita', 'Tomate y queso', [['33cm', 9], ['40cm', 14]], ''],
-    ['Pizza Tres Quesos', 'Tomate y tres quesos', [['33cm', 9], ['40cm', 14]], ''],
-    ['Pizza King Especial', 'Carne de kebab, cebolla, queso, champiñones, maíz y pimientos rojo y verde', [['33cm', 10], ['40cm', 15]], ''],
-    ['Pizza Riojana', 'Pollo, queso, pimientos rojo y verde', [['33cm', 9], ['40cm', 14]], ''],
-    ['Pizza de Atún', 'Atún, cebolla y queso', [['33cm', 9], ['40cm', 14]], ''],
-    ['Pizza Vegetal', 'Champiñones, cebolla, maíz, tomate, queso y pimientos', [['33cm', 9], ['40cm', 14]], ''],
-    ['Pizza de Kebab', 'Queso y carne de kebab', [['33cm', 9], ['40cm', 14]], ''],
+    ['Pizza Margarita', 'Tomate y queso', [['Mediana', 9], ['Grande', 14]], ''],
+    ['Pizza Tres Quesos', 'Tomate y tres quesos', [['Mediana', 9], ['Grande', 14]], ''],
+    ['Pizza King Especial', 'Carne de kebab, cebolla, queso, champiñones, maíz y pimientos rojo y verde', [['Mediana', 10], ['Grande', 15]], ''],
+    ['Pizza Riojana', 'Pollo, queso, pimientos rojo y verde', [['Mediana', 9], ['Grande', 14]], ''],
+    ['Pizza de Atún', 'Atún, cebolla y queso', [['Mediana', 9], ['Grande', 14]], ''],
+    ['Pizza Vegetal', 'Champiñones, cebolla, maíz, tomate, queso y pimientos', [['Mediana', 9], ['Grande', 14]], ''],
+    ['Pizza de Kebab', 'Queso y carne de kebab', [['Mediana', 9], ['Grande', 14]], ''],
   ]],
   ['Platos Kebab', [
     ['Plato Kebab Familiar', 'De pollo, ternera o mixto. Con ensalada, patatas fritas, salsa y 2 panes', 13, 'mxs'],
@@ -152,6 +152,7 @@ function fixImgs(cats) {
     if (it.img && !/^\/img\//.test(it.img)) continue;
     const k = IMG[it.id]; if (k) it.img = '/img/' + k + '.webp';
   }
+  for (const c of cats || []) for (const it of c.items || []) for (const z of it.sizes || []) { if (z.label === '33cm') z.label = 'Mediana'; else if (z.label === '40cm') z.label = 'Grande'; }
   return cats;
 }
 module.exports = { buildSeed, slugify, fixImgs };
