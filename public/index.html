@@ -433,11 +433,11 @@ select.fld option{background:#171717}
     <div class="lines" id="cartLines"></div>
     <div class="form" id="checkout">
       <div class="seg"><button id="modeDel" class="opt sel" onclick="setMode('delivery')"><svg class="ic"><use href="#i-bike"/></svg>A domicilio</button><button id="modePick" class="opt" onclick="setMode('pickup')"><svg class="ic"><use href="#i-store"/></svg>Recoger</button></div>
-      <input id="cName" class="fld" placeholder="Tu nombre *" autocomplete="name">
+      <input id="cName" class="fld" placeholder="Tu nombre (opcional)" autocomplete="name">
       <input id="cPhone" class="fld" placeholder="Teléfono *" inputmode="tel" autocomplete="tel">
       <div class="form" id="delFields">
         <select id="zone" class="fld" onchange="renderCart()"></select>
-        <input id="cAddr" class="fld" placeholder="Calle y número de portal / casa *" autocomplete="street-address"><label class="casa"><input type="checkbox" id="cCasa"> Es una casa (sin piso ni puerta)</label><div class="addr2" id="pisoBox"><input id="cPiso" class="fld" placeholder="Piso *" maxlength="12" autocomplete="off"><input id="cPuerta" class="fld" placeholder="Puerta *" maxlength="12" autocomplete="off"></div><input id="cTimbre" class="fld" placeholder="Timbre: nombre que pone en el timbre *" maxlength="40" autocomplete="off">
+        <input id="cAddr" class="fld" placeholder="Calle y número de portal / casa *" autocomplete="street-address"><label class="casa"><input type="checkbox" id="cCasa"> Es una casa (sin piso ni puerta)</label><div class="addr2" id="pisoBox"><input id="cPiso" class="fld" placeholder="Piso *" maxlength="12" autocomplete="off"><input id="cPuerta" class="fld" placeholder="Puerta (opcional)" maxlength="12" autocomplete="off"></div><input id="cTimbre" class="fld" placeholder="Timbre: nombre que pone en el timbre *" maxlength="40" autocomplete="off">
       </div>
       <select id="pay" class="fld"></select>
       <textarea id="cNotes" class="fld" rows="2" placeholder="Notas (alergias, timbre, sin cebolla…)"></textarea>
@@ -739,11 +739,10 @@ async function confirmOrder() {
   if (!cart.length) return toast('El pedido está vacío');
   const name = $('#cName').value.trim(), phone = $('#cPhone').value.trim(), addr = $('#cAddr').value.trim(), z = zoneSel();
   const addr2 = [$('#cCasa').checked ? 'Casa (sin piso)' : '', !$('#cCasa').checked && $('#cPiso').value.trim() && 'Piso ' + $('#cPiso').value.trim(), !$('#cCasa').checked && $('#cPuerta').value.trim() && 'Puerta ' + $('#cPuerta').value.trim(), $('#cTimbre').value.trim() && 'Timbre: ' + $('#cTimbre').value.trim()].filter(Boolean).join(' · ');
-  if (name.length < 2) return toast('Escribe tu nombre');
   if (phone.replace(/\D/g, '').length < 9) return toast('Teléfono no válido');
   if (mode === 'delivery' && addr.length < 4) return toast('Escribe tu dirección');
   if (mode === 'delivery' && !/\d|s\/n/i.test(addr)) return toast('Añade el número de portal o casa');
-  if (mode === 'delivery' && !$('#cCasa').checked && ($('#cPiso').value.trim().length < 1 || $('#cPuerta').value.trim().length < 1)) return toast('Escribe piso y puerta (o marca "Es una casa")');
+  if (mode === 'delivery' && !$('#cCasa').checked && $('#cPiso').value.trim().length < 1) return toast('Escribe el piso (o marca "Es una casa")');
   if (mode === 'delivery' && $('#cTimbre').value.trim().length < 2) return toast('Escribe el nombre que pone en el timbre');
   if (cart.some(l => lineInfo(l).bad)) return toast('Quita los productos no disponibles');
   if (mode === 'delivery' && subTotal() < z.min) return toast(`Mínimo ${eur(z.min)} para ${z.name}`);
