@@ -1,6 +1,9 @@
 {
   "name": "king-kebab",
-  "version": "1.8.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "King Kebab - pedidos online + panel"
+  "description": "King Kebab Turkish Food - web de pedidos con panel para dueño y empleados",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "@netlify/blobs": ">=8.0.0" },
+  "engines": { "node": ">=20" }
 }
