@@ -1,6 +1,12 @@
 {
   "name": "king-kebab",
-  "version": "1.9.5",
+  "version": "1.9.6",
   "private": true,
-  "description": "King Kebab - pedidos online + panel"
+  "description": "King Kebab Turkish Food - web de pedidos con panel para due\u00f1o y empleados",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }
