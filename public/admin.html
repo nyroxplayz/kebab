@@ -352,15 +352,15 @@ async function cancelOrder(id) { if (await ask('¿Cancelar el pedido ' + id + '?
 function ticketHtml(o) {
   const set = S.settings, r = (a, b) => `<div class="r"><span>${a}</span><span>${b}</span></div>`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(o.id)}</title><style>
-  @page{size:80mm auto;margin:0}*{box-sizing:border-box}body{width:72mm;margin:0 auto;padding:4mm 0;font:12px/1.35 'Courier New',monospace;color:#000}
-  h1{font-size:19px;text-align:center;margin:0}.c{text-align:center}.hr{border-top:1px dashed #000;margin:6px 0}.r{display:flex;justify-content:space-between;gap:6px}.b{font-weight:bold}.big{font-size:17px}.s{font-size:11px;padding-left:12px}
+  @page{size:80mm auto;margin:0}*{box-sizing:border-box}body{width:72mm;margin:0 auto;padding:3mm 0;font:600 17px/1.3 Arial,Helvetica,sans-serif;color:#000}
+  h1{font-size:24px;line-height:1.15;text-align:center;margin:0 0 2px;font-weight:900}.c{text-align:center}.hr{border-top:2px dashed #000;margin:8px 0}.r{display:flex;justify-content:space-between;gap:8px}.b{font-weight:900}.big{font-size:22px}.s{font-size:16px;padding-left:12px}.it{font-size:19px;font-weight:900;margin-top:4px}
   </style></head><body>
   <h1>${esc((set.name || 'KING KEBAB').toUpperCase())}</h1><div class="c">${esc(set.address || '')}</div><div class="c">Tel. ${esc(set.phone || '')}</div><div class="hr"></div>
   <div class="c b big">${esc(o.id)}</div><div class="c">${new Date(o.ts).toLocaleString('es-ES', { timeZone: set.tz })}</div><div class="hr"></div>
   <div class="b big">${o.mode === 'delivery' ? '*** A DOMICILIO ***' : '*** RECOGIDA ***'}</div>
   <div class="b">${esc(o.name)}</div><div>Tel: ${esc(o.phone)}</div>${o.mode === 'delivery' ? `<div class="b">${esc(o.addr)}</div>${o.addr2 ? `<div class="b">${esc(o.addr2)}</div>` : ''}<div>Zona: ${esc(o.zone)}</div>` : ''}
   <div class="hr"></div>
-  ${o.items.map(i => `<div class="b">${i.q}x ${esc(i.n)}</div>${i.o ? `<div class="s">${esc(i.o)}</div>` : ''}${r('', eur(i.p))}`).join('')}
+  ${o.items.map(i => `<div class="it">${i.q}x ${esc(i.n)}</div>${i.o ? `<div class="s">${esc(i.o)}</div>` : ''}${r('', eur(i.p))}`).join('')}
   <div class="hr"></div>${r('Subtotal', eur(o.sub))}${o.mode === 'delivery' ? r('Envío', eur(o.fee)) : ''}<div class="r b big"><span>TOTAL</span><span>${eur(o.total)}</span></div>
   <div class="b">Pago: ${esc(o.pay)}</div>${o.notes ? `<div class="hr"></div><div class="b">NOTAS: ${esc(o.notes)}</div>` : ''}
   <div class="hr"></div><div class="c">¡Gracias por su pedido!</div><div class="c">&nbsp;</div></body></html>`;
