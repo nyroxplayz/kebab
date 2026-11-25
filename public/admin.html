@@ -356,7 +356,7 @@ function brandFoot() { return '<div class="dbl"></div><div class="thx">¡Gracias
 function taxOf(o) { const v = Number.isFinite(S.settings.vat) ? S.settings.vat : 10, base = Math.round(o.total / (1 + v / 100) * 100) / 100; return { v, base, tax: Math.round((o.total - base) * 100) / 100 }; }
 function facturaHtml(o) {
   const set = S.settings, n = x => (+x).toFixed(2).replace('.', ','), t = taxOf(o), r = (a, b) => `<div class="r"><span>${a}</span><span>${b}</span></div>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(o.id)}</title><style>
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="color-scheme" content="light only"><title>${esc(o.id)}</title><style>html,body{background:#fff!important;color:#000!important;color-scheme:light only;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   @page{size:80mm auto;margin:0}*{box-sizing:border-box}body{width:72mm;margin:0 auto;padding:3mm 0;font:600 16px/1.3 Arial,Helvetica,sans-serif;color:#000}
   .c{text-align:center}.hr{border-top:2px dashed #000;margin:8px 0}.r{display:flex;justify-content:space-between;gap:8px}.b{font-weight:900}.big{font-size:26px;font-weight:900}.it{font-weight:900;font-size:17px;margin-top:3px}.s{font-size:14px;padding-left:10px}.t{font-size:14px}${TK_CSS}
   </style></head><body>
@@ -374,7 +374,7 @@ function facturaHtml(o) {
 function ticketHtml(o) {
   if (o.mode === 'local') return facturaHtml(o);
   const set = S.settings, r = (a, b) => `<div class="r"><span>${a}</span><span>${b}</span></div>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(o.id)}</title><style>
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="color-scheme" content="light only"><title>${esc(o.id)}</title><style>html,body{background:#fff!important;color:#000!important;color-scheme:light only;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   @page{size:80mm auto;margin:0}*{box-sizing:border-box}body{width:72mm;margin:0 auto;padding:3mm 0;font:600 17px/1.3 Arial,Helvetica,sans-serif;color:#000}
   .c{text-align:center}.hr{border-top:2px dashed #000;margin:8px 0}.r{display:flex;justify-content:space-between;gap:8px}.b{font-weight:900}.big{font-size:22px}.s{font-size:16px;padding-left:12px}.it{font-size:19px;font-weight:900;margin-top:4px}${TK_CSS}
   </style></head><body>
@@ -422,19 +422,22 @@ function printTicket(id) {                       // vista previa + botón Imprim
   tkId = id; $('#tkFrame').srcdoc = ticketHtml(o); $('#tkModal').style.display = 'flex';
 }
 function closeTicket() { $('#tkModal').style.display = 'none'; $('#tkFrame').srcdoc = ''; }
+function printFrame(w) {             // espera a que el ticket esté pintado antes de abrir la impresión (evita la 1ª vista en negro)
+  const go = () => { try { w.focus(); w.print(); } catch (e) { toast('No se pudo abrir la impresión. Pulsa Ctrl+P'); } };
+  const ready = (w.document.fonts && w.document.fonts.ready) || Promise.resolve();
+  ready.then(() => w.requestAnimationFrame(() => w.requestAnimationFrame(() => setTimeout(go, 350))));
+}
 function doPrint() {
   if (prMode !== 'web') { const o = S.orders.find(x => x.id === tkId); if (o) return rawPrint(o); }
-  try { const w = $('#tkFrame').contentWindow; w.focus(); w.print(); }
-  catch (e) { toast('No se pudo abrir la impresión. Pulsa Ctrl+P'); }
+  try { printFrame($('#tkFrame').contentWindow); } catch (e) { toast('No se pudo abrir la impresión. Pulsa Ctrl+P'); }
 }
 function autoPrintTicket(id) {                   // impresión directa (auto-ticket)
   const o = S.orders.find(x => x.id === id); if (!o) return;
   if (prMode !== 'web') return rawPrint(o);
-  const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;left:-9999px;top:0;width:80mm;height:700px;border:0';
-  f.onload = () => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) {} setTimeout(() => f.remove(), 60000); };
+  const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;left:0;top:0;width:80mm;height:700px;border:0;opacity:0;pointer-events:none;z-index:-1;background:#fff';
+  f.onload = () => { printFrame(f.contentWindow); setTimeout(() => f.remove(), 90000); };
   document.body.appendChild(f); f.srcdoc = ticketHtml(o);
 }
-
 
 /* ================= CAJA (venta en mostrador) ================= */
 let POS = { cart: [], cat: null, pay: null };
