@@ -349,40 +349,44 @@ async function setStatus(id, s) {
 async function cancelOrder(id) { if (await ask('¿Cancelar el pedido ' + id + '?')) setStatus(id, 'cancelled'); }
 
 /* ---- ticket 80mm ---- */
+const CROWN = '<svg viewBox="0 0 100 80" width="64" height="51" style="display:block;margin:0 auto 4px"><path d="M4 18l24 26 22-38 22 38 24-26-9 52H13z" fill="#000"/><circle cx="4" cy="18" r="6" fill="#000"/><circle cx="50" cy="6" r="6" fill="#000"/><circle cx="96" cy="18" r="6" fill="#000"/><rect x="13" y="74" width="74" height="6" fill="#000"/></svg>';
+const TK_CSS = '.brand{font:900 31px/1 Impact,\'Arial Black\',Arial,sans-serif;letter-spacing:1px;text-align:center;text-transform:uppercase}.brand i{font-style:normal;letter-spacing:6px;font-size:15px;display:block;margin-top:3px;font-family:Arial,sans-serif;font-weight:800}.bar{background:#000;color:#fff;text-align:center;font-weight:900;padding:4px 0;margin:6px 0;letter-spacing:1px}.dbl{border-top:4px double #000;margin:8px 0}.thx{font:900 20px/1.1 Impact,\'Arial Black\',Arial,sans-serif;text-align:center;text-transform:uppercase;margin-top:4px}.web{text-align:center;font-weight:900;font-size:17px;margin-top:4px}';
+function brandHead(set) { return CROWN + `<div class="brand">${esc((set.legalName || set.name || 'King Kebab').replace(/\s*turkish food\s*/i, ''))}<i>TURKISH FOOD</i></div>`; }
+function brandFoot() { return '<div class="dbl"></div><div class="thx">¡Gracias por tu visita!</div><div class="web">kingkebablardero.es</div><div class="c" style="font-size:14px">Pide online · Entrega a domicilio</div><div class="c">&nbsp;</div>'; }
 function taxOf(o) { const v = Number.isFinite(S.settings.vat) ? S.settings.vat : 10, base = Math.round(o.total / (1 + v / 100) * 100) / 100; return { v, base, tax: Math.round((o.total - base) * 100) / 100 }; }
 function facturaHtml(o) {
   const set = S.settings, n = x => (+x).toFixed(2).replace('.', ','), t = taxOf(o), r = (a, b) => `<div class="r"><span>${a}</span><span>${b}</span></div>`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(o.id)}</title><style>
   @page{size:80mm auto;margin:0}*{box-sizing:border-box}body{width:72mm;margin:0 auto;padding:3mm 0;font:600 16px/1.3 Arial,Helvetica,sans-serif;color:#000}
-  h1{font-size:23px;line-height:1.15;text-align:center;margin:0 0 2px;font-weight:900}.c{text-align:center}.hr{border-top:2px dashed #000;margin:8px 0}.r{display:flex;justify-content:space-between;gap:8px}.b{font-weight:900}.big{font-size:24px;font-weight:900}.it{font-weight:900;font-size:17px;margin-top:3px}.s{font-size:14px;padding-left:10px}.t{font-size:14px}
+  .c{text-align:center}.hr{border-top:2px dashed #000;margin:8px 0}.r{display:flex;justify-content:space-between;gap:8px}.b{font-weight:900}.big{font-size:26px;font-weight:900}.it{font-weight:900;font-size:17px;margin-top:3px}.s{font-size:14px;padding-left:10px}.t{font-size:14px}${TK_CSS}
   </style></head><body>
-  <h1>${esc(set.legalName || set.name || 'King Kebab')}</h1>${set.nif ? `<div class="c">${esc(set.nif)}</div>` : ''}<div class="c">${esc(set.phone || '')}</div>${set.email ? `<div class="c">${esc(set.email)}</div>` : ''}<div class="c">${esc(set.legalAddr || set.address || '')}</div>
+  ${brandHead(set)}<div style="height:6px"></div>${set.nif ? `<div class="c">${esc(set.nif)}</div>` : ''}<div class="c">${esc(set.phone || '')}</div>${set.email ? `<div class="c">${esc(set.email)}</div>` : ''}<div class="c">${esc(set.legalAddr || set.address || '')}</div>
   <div class="c">${new Date(o.ts).toLocaleString('es-ES', { timeZone: set.tz, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div><div class="hr"></div>
-  <div class="c b">FACTURA SIMPLIFICADA</div><div class="c">Nº Ticket: ${esc(o.id)}</div><div class="hr"></div>
+  <div class="bar">FACTURA SIMPLIFICADA</div><div class="c b">Nº Ticket: ${esc(o.id)}</div><div class="hr"></div>
   ${r('<span class="b">Cant.</span>', '<span class="b">Total(EUR)</span>')}
   ${o.items.map(i => `<div class="r it"><span>${String(i.q).padStart(2, '0')} ${esc(i.n)}</span><span>${n(i.p)}</span></div>${i.o ? `<div class="s">${esc(i.o)}</div>` : ''}`).join('')}
-  <div class="hr"></div><div class="r big"><span>TOTAL</span><span>${n(o.total)}</span></div><div class="hr"></div>
+  <div class="dbl"></div><div class="r big"><span>TOTAL</span><span>${n(o.total)}</span></div><div class="dbl"></div>
   <div class="r t b"><span>Impuesto%</span><span>Impuesto</span><span>Base</span><span></span></div>
   <div class="r t"><span>${t.v}%</span><span>${n(t.tax)}</span><span>${n(t.base)}</span><span>${n(o.total)}</span></div>
   <div class="r t b"><span>TOTAL</span><span>${n(t.tax)}</span><span>${n(t.base)}</span><span>${n(o.total)}</span></div><div class="hr"></div>
-  <div class="c b">Método de pago: ${esc(o.pay)}</div>${set.nif ? `<div class="hr"></div><div class="c">${esc(set.nif)}</div>` : ''}<div class="c">&nbsp;</div></body></html>`;
+  <div class="bar">Método de pago: ${esc(o.pay)}</div>${brandFoot()}</body></html>`;
 }
 function ticketHtml(o) {
   if (o.mode === 'local') return facturaHtml(o);
   const set = S.settings, r = (a, b) => `<div class="r"><span>${a}</span><span>${b}</span></div>`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(o.id)}</title><style>
   @page{size:80mm auto;margin:0}*{box-sizing:border-box}body{width:72mm;margin:0 auto;padding:3mm 0;font:600 17px/1.3 Arial,Helvetica,sans-serif;color:#000}
-  h1{font-size:24px;line-height:1.15;text-align:center;margin:0 0 2px;font-weight:900}.c{text-align:center}.hr{border-top:2px dashed #000;margin:8px 0}.r{display:flex;justify-content:space-between;gap:8px}.b{font-weight:900}.big{font-size:22px}.s{font-size:16px;padding-left:12px}.it{font-size:19px;font-weight:900;margin-top:4px}
+  .c{text-align:center}.hr{border-top:2px dashed #000;margin:8px 0}.r{display:flex;justify-content:space-between;gap:8px}.b{font-weight:900}.big{font-size:22px}.s{font-size:16px;padding-left:12px}.it{font-size:19px;font-weight:900;margin-top:4px}${TK_CSS}
   </style></head><body>
-  <h1>${esc((set.name || 'KING KEBAB').toUpperCase())}</h1><div class="c">${esc(set.address || '')}</div><div class="c">Tel. ${esc(set.phone || '')}</div>${set.nif ? `<div class="c">NIF: ${esc(set.nif)}</div>` : ''}${set.email ? `<div class="c">${esc(set.email)}</div>` : ''}<div class="hr"></div>
+  ${brandHead(set)}<div style="height:6px"></div><div class="c">${esc(set.address || '')}</div><div class="c">Tel. ${esc(set.phone || '')}</div>${set.nif ? `<div class="c">NIF: ${esc(set.nif)}</div>` : ''}${set.email ? `<div class="c">${esc(set.email)}</div>` : ''}<div class="hr"></div>
   <div class="c b big">${esc(o.id)}</div><div class="c">${new Date(o.ts).toLocaleString('es-ES', { timeZone: set.tz })}</div><div class="hr"></div>
-  <div class="b big">${o.mode === 'delivery' ? '*** A DOMICILIO ***' : '*** RECOGIDA ***'}</div>
+  <div class="bar big">${o.mode === 'delivery' ? 'A DOMICILIO' : 'RECOGIDA'}</div>
   <div class="b">${esc(o.name)}</div><div>Tel: ${esc(o.phone)}</div>${o.mode === 'delivery' ? `<div class="b">${esc(o.addr)}</div>${o.addr2 ? `<div class="b">${esc(o.addr2)}</div>` : ''}<div>Zona: ${esc(o.zone)}</div>` : ''}
   <div class="hr"></div>
   ${o.items.map(i => `<div class="it">${i.q}x ${esc(i.n)}</div>${i.o ? `<div class="s">${esc(i.o)}</div>` : ''}${r('', eur(i.p))}`).join('')}
   <div class="hr"></div>${r('Subtotal', eur(o.sub))}${o.mode === 'delivery' ? r('Envío', eur(o.fee)) : ''}<div class="r b big"><span>TOTAL</span><span>${eur(o.total)}</span></div>
   <div class="b">Pago: ${esc(o.pay)}</div>${o.notes ? `<div class="hr"></div><div class="b">NOTAS: ${esc(o.notes)}</div>` : ''}
-  <div class="hr"></div><div class="c">¡Gracias por su pedido!</div><div class="c">&nbsp;</div></body></html>`;
+  ${brandFoot()}</body></html>`;
 }
 
 /* ---- impresión directa Sunmi vía app RawBT (sin cuadro de impresión) ---- */
