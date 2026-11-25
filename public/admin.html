@@ -279,7 +279,7 @@ async function setAccepting(v) {
 
 /* ================= pestañas ================= */
 function tabsFor() {
-  const t = [['orders', 'Pedidos', 'chef'], ['hist', 'Historial', 'clock']];
+  const t = [['orders', 'Pedidos', 'chef'], ['pos', 'Caja', 'print'], ['hist', 'Historial', 'clock']];
   if (ROLE === 'owner') t.push(['menu', 'Carta y precios', 'edit'], ['zones', 'Reparto', 'bike'], ['reviews', 'Opiniones', 'star'], ['stats', 'Estadísticas', 'chart'], ['settings', 'Ajustes', 'gear']);
   else t.push(['avail', 'Agotados', 'eye']);
   return t;
@@ -298,7 +298,7 @@ async function go(k) {
 function renderAll() { updateTabs(); renderView(); }
 function renderView() {
   const v = $('#view'), y = scrollY;
-  const f = { orders: vOrders, hist: vHist, menu: vMenu, zones: vZones, reviews: vReviews, stats: vStats, settings: vSettings, avail: vAvail }[tab];
+  const f = { orders: vOrders, pos: vPos, hist: vHist, menu: vMenu, zones: vZones, reviews: vReviews, stats: vStats, settings: vSettings, avail: vAvail }[tab];
   if (['menu', 'zones', 'settings'].includes(tab) && document.activeElement && v.contains(document.activeElement) && ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName) && !renderView.force) return;
   renderView.force = false; v.innerHTML = ''; f(v); scrollTo(0, y); updateTabs();
 }
@@ -316,7 +316,7 @@ function ordCard(o) {
   const mins = (Date.now() - o.ts) / 60000, late = o.status === 'pending' && mins > 10;
   const fin = o.status === 'done' || o.status === 'cancelled';
   return `<div class="ord ${newIds.has(o.id) ? 'new' : ''} ${late ? 'late' : ''}">
-    <div class="top"><span class="id">${esc(o.id)}<span class="tag">${o.mode === 'pickup' ? 'RECOGIDA' : 'DOMICILIO'}</span></span><span class="m">${hhmm(o.ts)} · ${ago(o.ts)}</span></div>
+    <div class="top"><span class="id">${esc(o.id)}<span class="tag">${o.mode === 'local' ? 'MOSTRADOR' : o.mode === 'pickup' ? 'RECOGIDA' : 'DOMICILIO'}</span></span><span class="m">${hhmm(o.ts)} · ${ago(o.ts)}</span></div>
     <div style="margin-top:5px"><b>${esc(o.name)}</b> · <a href="tel:${esc(o.phone)}">${esc(o.phone)}</a></div>
     ${o.mode === 'delivery' ? `<div class="m">${I('bike')} ${esc(o.zone)} · <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.addr + ', ' + o.zone + ', La Rioja')}" target="_blank" rel="noopener">${esc(o.addr)}</a></div>${o.addr2 ? `<div class="m" style="font-weight:900">${I('bike')} ${esc(o.addr2)}</div>` : ''}` : ''}
     <ul>${o.items.map(i => `<li><b>${i.q}x</b> ${esc(i.n)}${i.o ? `<small>${esc(i.o)}</small>` : ''}</li>`).join('')}</ul>
@@ -339,7 +339,7 @@ function vOrders(v) {
     <div class="stats"><div class="stat">Pedidos hoy<b>${tot.length}</b></div>${ROLE === 'owner' ? `<div class="stat">Ventas hoy<b>${eur(tot.reduce((a, o) => a + o.total, 0))}</b></div>` : ''}<div class="stat">Pendientes<b>${by('pending').length}</b></div><div class="stat">En marcha<b>${by('cooking').length + by('ready').length}</b></div></div>
     <div class="board">${cols.map(([n, l, c]) => `<div class="col"><div class="col-h" style="color:${c}"><span>${n}</span><span class="n">${l.length}</span></div><div class="ords">${l.map(ordCard).join('') || '<div class="none">—</div>'}</div></div>`).join('')}</div>
     <h3 class="disp" style="font-size:24px;margin:22px 0 10px;color:#2fe27a">Terminados hoy <span class="n" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;border:2px solid #333;border-radius:99px;padding:1px 9px;color:#fff;vertical-align:middle">${fin.length}</span></h3>
-    <div class="tblw"><table class="hist"><thead><tr><th>PEDIDO</th><th>HORA</th><th>CLIENTE</th><th>TIPO</th><th>PAGO</th><th>TOTAL</th><th>ESTADO</th><th></th></tr></thead><tbody>${fin.map(o => `<tr><td><b style="color:var(--yel)">${esc(o.id)}</b></td><td>${hhmm(o.ts)}</td><td>${esc(o.name)} · ${esc(o.phone)}</td><td>${o.mode === 'pickup' ? 'Recogida' : esc(o.zone)}</td><td>${esc(o.pay)}</td><td><b>${eur(o.total)}</b></td><td>${lbl(o)}</td><td><button class="xs" title="Ticket" onclick="printTicket('${o.id}')">${I('print')}</button> <button class="xs" title="Reabrir" onclick="setStatus('${o.id}','cooking')">↺</button> <button class="xs del" title="Borrar" onclick="delOrder('${o.id}')">${I('trash')}</button></td></tr>`).join('') || '<tr><td colspan="8" class="none">Aún no hay pedidos terminados hoy</td></tr>'}</tbody></table></div>`;
+    <div class="tblw"><table class="hist"><thead><tr><th>PEDIDO</th><th>HORA</th><th>CLIENTE</th><th>TIPO</th><th>PAGO</th><th>TOTAL</th><th>ESTADO</th><th></th></tr></thead><tbody>${fin.map(o => `<tr><td><b style="color:var(--yel)">${esc(o.id)}</b></td><td>${hhmm(o.ts)}</td><td>${esc(o.name)} · ${esc(o.phone)}</td><td>${o.mode === 'local' ? 'Mostrador' : o.mode === 'pickup' ? 'Recogida' : esc(o.zone)}</td><td>${esc(o.pay)}</td><td><b>${eur(o.total)}</b></td><td>${lbl(o)}</td><td><button class="xs" title="Ticket" onclick="printTicket('${o.id}')">${I('print')}</button> <button class="xs" title="Reabrir" onclick="setStatus('${o.id}','cooking')">↺</button> <button class="xs del" title="Borrar" onclick="delOrder('${o.id}')">${I('trash')}</button></td></tr>`).join('') || '<tr><td colspan="8" class="none">Aún no hay pedidos terminados hoy</td></tr>'}</tbody></table></div>`;
 }
 async function setStatus(id, s) {
   const o = S.orders.find(x => x.id === id); if (!o) return;
@@ -349,13 +349,32 @@ async function setStatus(id, s) {
 async function cancelOrder(id) { if (await ask('¿Cancelar el pedido ' + id + '?')) setStatus(id, 'cancelled'); }
 
 /* ---- ticket 80mm ---- */
+function taxOf(o) { const v = Number.isFinite(S.settings.vat) ? S.settings.vat : 10, base = Math.round(o.total / (1 + v / 100) * 100) / 100; return { v, base, tax: Math.round((o.total - base) * 100) / 100 }; }
+function facturaHtml(o) {
+  const set = S.settings, n = x => (+x).toFixed(2).replace('.', ','), t = taxOf(o), r = (a, b) => `<div class="r"><span>${a}</span><span>${b}</span></div>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(o.id)}</title><style>
+  @page{size:80mm auto;margin:0}*{box-sizing:border-box}body{width:72mm;margin:0 auto;padding:3mm 0;font:600 16px/1.3 Arial,Helvetica,sans-serif;color:#000}
+  h1{font-size:23px;line-height:1.15;text-align:center;margin:0 0 2px;font-weight:900}.c{text-align:center}.hr{border-top:2px dashed #000;margin:8px 0}.r{display:flex;justify-content:space-between;gap:8px}.b{font-weight:900}.big{font-size:24px;font-weight:900}.it{font-weight:900;font-size:17px;margin-top:3px}.s{font-size:14px;padding-left:10px}.t{font-size:14px}
+  </style></head><body>
+  <h1>${esc(set.legalName || set.name || 'King Kebab')}</h1>${set.nif ? `<div class="c">${esc(set.nif)}</div>` : ''}<div class="c">${esc(set.phone || '')}</div>${set.email ? `<div class="c">${esc(set.email)}</div>` : ''}<div class="c">${esc(set.legalAddr || set.address || '')}</div>
+  <div class="c">${new Date(o.ts).toLocaleString('es-ES', { timeZone: set.tz, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div><div class="hr"></div>
+  <div class="c b">FACTURA SIMPLIFICADA</div><div class="c">Nº Ticket: ${esc(o.id)}</div><div class="hr"></div>
+  ${r('<span class="b">Cant.</span>', '<span class="b">Total(EUR)</span>')}
+  ${o.items.map(i => `<div class="r it"><span>${String(i.q).padStart(2, '0')} ${esc(i.n)}</span><span>${n(i.p)}</span></div>${i.o ? `<div class="s">${esc(i.o)}</div>` : ''}`).join('')}
+  <div class="hr"></div><div class="r big"><span>TOTAL</span><span>${n(o.total)}</span></div><div class="hr"></div>
+  <div class="r t b"><span>Impuesto%</span><span>Impuesto</span><span>Base</span><span></span></div>
+  <div class="r t"><span>${t.v}%</span><span>${n(t.tax)}</span><span>${n(t.base)}</span><span>${n(o.total)}</span></div>
+  <div class="r t b"><span>TOTAL</span><span>${n(t.tax)}</span><span>${n(t.base)}</span><span>${n(o.total)}</span></div><div class="hr"></div>
+  <div class="c b">Método de pago: ${esc(o.pay)}</div>${set.nif ? `<div class="hr"></div><div class="c">${esc(set.nif)}</div>` : ''}<div class="c">&nbsp;</div></body></html>`;
+}
 function ticketHtml(o) {
+  if (o.mode === 'local') return facturaHtml(o);
   const set = S.settings, r = (a, b) => `<div class="r"><span>${a}</span><span>${b}</span></div>`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(o.id)}</title><style>
   @page{size:80mm auto;margin:0}*{box-sizing:border-box}body{width:72mm;margin:0 auto;padding:3mm 0;font:600 17px/1.3 Arial,Helvetica,sans-serif;color:#000}
   h1{font-size:24px;line-height:1.15;text-align:center;margin:0 0 2px;font-weight:900}.c{text-align:center}.hr{border-top:2px dashed #000;margin:8px 0}.r{display:flex;justify-content:space-between;gap:8px}.b{font-weight:900}.big{font-size:22px}.s{font-size:16px;padding-left:12px}.it{font-size:19px;font-weight:900;margin-top:4px}
   </style></head><body>
-  <h1>${esc((set.name || 'KING KEBAB').toUpperCase())}</h1><div class="c">${esc(set.address || '')}</div><div class="c">Tel. ${esc(set.phone || '')}</div><div class="hr"></div>
+  <h1>${esc((set.name || 'KING KEBAB').toUpperCase())}</h1><div class="c">${esc(set.address || '')}</div><div class="c">Tel. ${esc(set.phone || '')}</div>${set.nif ? `<div class="c">NIF: ${esc(set.nif)}</div>` : ''}${set.email ? `<div class="c">${esc(set.email)}</div>` : ''}<div class="hr"></div>
   <div class="c b big">${esc(o.id)}</div><div class="c">${new Date(o.ts).toLocaleString('es-ES', { timeZone: set.tz })}</div><div class="hr"></div>
   <div class="b big">${o.mode === 'delivery' ? '*** A DOMICILIO ***' : '*** RECOGIDA ***'}</div>
   <div class="b">${esc(o.name)}</div><div>Tel: ${esc(o.phone)}</div>${o.mode === 'delivery' ? `<div class="b">${esc(o.addr)}</div>${o.addr2 ? `<div class="b">${esc(o.addr2)}</div>` : ''}<div>Zona: ${esc(o.zone)}</div>` : ''}
@@ -374,10 +393,10 @@ function rawTicket(o, W) {
   const wrap = t => { t = clean(t); const out = []; while (t.length > W) { let k = t.lastIndexOf(' ', W); if (k < 1) k = W; out.push(t.slice(0, k)); t = t.slice(k).trim(); } out.push(t); return out; };
   const e = n => (+n).toFixed(2).replace('.', ',') + ' EUR', hr = '-'.repeat(W), L = [];
   L.push('\x1b\x40'); L.push('\x1b\x61\x01\x1d\x21\x11' + clean((set.name || 'KING KEBAB').toUpperCase()) + '\x1d\x21\x00');
-  L.push(ctr(set.address || '')); L.push(ctr('Tel. ' + (set.phone || ''))); L.push(hr);
+  L.push(ctr(set.address || '')); L.push(ctr('Tel. ' + (set.phone || ''))); if (set.nif) L.push(ctr('NIF: ' + set.nif)); if (set.email) L.push(ctr(set.email)); L.push(hr);
   L.push('\x1b\x61\x01\x1d\x21\x11' + clean(o.id) + '\x1d\x21\x00'); L.push(ctr(new Date(o.ts).toLocaleString('es-ES', { timeZone: set.tz }))); L.push('\x1b\x61\x00' + hr);
-  L.push('\x1b\x45\x01' + (o.mode === 'delivery' ? '*** A DOMICILIO ***' : '*** RECOGIDA ***') + '\x1b\x45\x00');
-  L.push(...wrap(o.name)); L.push('Tel: ' + clean(o.phone));
+  L.push('\x1b\x45\x01' + (o.mode === 'local' ? '*** MOSTRADOR ***' : o.mode === 'delivery' ? '*** A DOMICILIO ***' : '*** RECOGIDA ***') + '\x1b\x45\x00');
+  if (o.mode !== 'local') { L.push(...wrap(o.name)); L.push('Tel: ' + clean(o.phone)); }
   if (o.mode === 'delivery') { L.push('\x1b\x45\x01'); L.push(...wrap(o.addr)); if (o.addr2) L.push(...wrap(o.addr2)); L.push('\x1b\x45\x00'); L.push('Zona: ' + clean(o.zone)); }
   L.push(hr);
   for (const i of o.items) { L.push('\x1b\x45\x01' + wrap(i.q + 'x ' + i.n).join('\n') + '\x1b\x45\x00'); if (i.o) L.push(...wrap('  ' + i.o)); L.push(row('', e(i.p))); }
@@ -410,6 +429,79 @@ function autoPrintTicket(id) {                   // impresión directa (auto-tic
   const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;left:-9999px;top:0;width:80mm;height:700px;border:0';
   f.onload = () => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) {} setTimeout(() => f.remove(), 60000); };
   document.body.appendChild(f); f.srcdoc = ticketHtml(o);
+}
+
+
+/* ================= CAJA (venta en mostrador) ================= */
+let POS = { cart: [], cat: null, pay: null };
+const mny = n => (+n).toFixed(2).replace('.', ',') + '€';
+function posUnit(l) { const it = S.cats.flatMap(c => c.items).find(x => x.id === l.id); if (!it) return 0; const base = it.sizes && it.sizes.length ? (it.sizes[l.size || 0] || it.sizes[0]).price : it.price; return base + (l.extra ? (S.settings.extraPrice || 0) : 0); }
+function posName(l) {
+  const it = S.cats.flatMap(c => c.items).find(x => x.id === l.id); if (!it) return '?';
+  const o = []; if (it.sizes && it.sizes.length) o.push((it.sizes[l.size || 0] || it.sizes[0]).label);
+  if (l.meat) o.push(l.meat); if (l.sauce && l.sauce.length) o.push(l.sauce.join(' + ')); if (l.drink) o.push(l.drink); if (l.extra) o.push('Extra'); if (l.notes) o.push('“' + l.notes + '”');
+  return it.name + (o.length ? ' · ' + o.join(', ') : '');
+}
+const posKey = l => JSON.stringify([l.id, l.size || 0, l.meat || '', l.sauce || [], l.drink || '', !!l.extra, l.notes || '']);
+function posPush(l) { l.qty = 1; const k = posKey(l), ex = POS.cart.find(x => posKey(x) === k); if (ex) ex.qty++; else POS.cart.push(l); renderView.force = true; renderView(); }
+function posTap(id, size) {
+  const it = S.cats.flatMap(c => c.items).find(x => x.id === id); if (!it) return;
+  if (it.opts && (it.opts.meat || it.opts.sauce || it.opts.drink || it.opts.extra)) return posOpts(it, size);
+  posPush({ id, size });
+}
+function posOpts(it, size) {
+  const st = S.settings, w = document.createElement('div');
+  w.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:14px';
+  const sel = (id, lab, arr) => `<label class="lb">${lab}</label><select class="fld" id="${id}">${arr.map(x => `<option>${esc(x)}</option>`).join('')}</select>`;
+  w.innerHTML = `<div class="card" style="max-width:420px;width:100%;margin:0;max-height:92vh;overflow:auto"><h3 class="disp">${esc(it.name)}</h3>
+  ${it.opts.meat ? sel('po_meat', 'CARNE', st.meats || []) : ''}
+  ${it.opts.sauce ? `<label class="lb" style="margin-top:8px">SALSAS</label><div style="display:flex;flex-wrap:wrap;gap:8px">${(st.sauces || []).map((x, i) => `<label class="acc" style="display:inline-flex"><input type="checkbox" class="po_s" value="${esc(x)}"> ${esc(x)}</label>`).join('')}</div>` : ''}
+  ${it.opts.drink ? sel('po_drink', 'BEBIDA', st.drinks || []) : ''}
+  ${it.opts.extra ? `<label class="acc" style="display:inline-flex;margin-top:10px"><input type="checkbox" id="po_extra"> Extra (+${mny(st.extraPrice || 0)})</label>` : ''}
+  <label class="lb" style="margin-top:8px">NOTA (opcional)</label><input class="fld" id="po_note" maxlength="100">
+  <div class="row" style="margin-top:14px;gap:8px"><button class="bt bt-d" style="flex:1" id="po_no">Cancelar</button><button class="bt bt-y" style="flex:1" id="po_ok">Añadir</button></div></div>`;
+  document.body.appendChild(w);
+  w.querySelector('#po_no').onclick = () => w.remove();
+  w.querySelector('#po_ok').onclick = () => {
+    const l = { id: it.id, size };
+    if (it.opts.meat) l.meat = w.querySelector('#po_meat').value;
+    if (it.opts.sauce) l.sauce = [...w.querySelectorAll('.po_s:checked')].map(x => x.value);
+    if (it.opts.drink) l.drink = w.querySelector('#po_drink').value;
+    if (it.opts.extra) l.extra = w.querySelector('#po_extra').checked;
+    const n = w.querySelector('#po_note').value.trim(); if (n) l.notes = n;
+    w.remove(); posPush(l);
+  };
+}
+function posQty(i, d) { const l = POS.cart[i]; if (!l) return; l.qty += d; if (l.qty < 1) POS.cart.splice(i, 1); renderView.force = true; renderView(); }
+function posClear() { POS.cart = []; renderView.force = true; renderView(); }
+function posPay(p) { POS.pay = p; renderView.force = true; renderView(); }
+function vPos(v) {
+  const cats = S.cats.filter(c => c.items.some(i => i.available)); if (!POS.cat || !cats.some(c => c.id === POS.cat)) POS.cat = cats[0] && cats[0].id;
+  const pays = S.settings.payments || []; if (!POS.pay || !pays.includes(POS.pay)) POS.pay = pays[0];
+  const cat = cats.find(c => c.id === POS.cat), total = POS.cart.reduce((a, l) => a + posUnit(l) * l.qty, 0);
+  const btn = (it, si) => {
+    const price = si == null ? it.price : it.sizes[si].price, lab = si == null ? '' : ' · ' + it.sizes[si].label;
+    return `<button class="posb" onclick="posTap('${it.id}',${si == null ? 0 : si})"><span>${esc(it.name)}${esc(lab)}</span><b>${mny(price)}</b></button>`;
+  };
+  v.innerHTML = `<style>.posw{display:grid;grid-template-columns:1fr minmax(300px,380px);gap:14px;align-items:start}@media(max-width:820px){.posw{grid-template-columns:1fr}.poscart{order:-1;position:static!important}}
+  .posb{display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-height:78px;text-align:left;background:#181818;color:#fff;border:2px solid #333;border-radius:12px;padding:10px;font:800 14px 'Plus Jakarta Sans',system-ui,sans-serif}.posb b{color:var(--yel);font-size:16px}.posb:active{background:#2a2a2a}
+  .posg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.poscart{position:sticky;top:130px}.posl{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed #333}.posl .n{flex:1;font:700 14px 'Plus Jakarta Sans',system-ui}.posl .q{display:flex;align-items:center;gap:6px}.posl .q button{width:34px;height:34px;border-radius:9px;border:2px solid #444;background:#222;color:#fff;font-size:18px;font-weight:800}</style>
+  <div class="posw"><div><div class="tabs" style="position:static;padding:0 0 10px;border:0;background:none;flex-wrap:wrap">${cats.map(c => `<button class="tab ${c.id === POS.cat ? 'on' : ''}" onclick="POS.cat='${c.id}';renderView.force=true;renderView()">${esc(c.name)}</button>`).join('')}</div>
+  <div class="posg">${cat ? cat.items.filter(i => i.available).map(it => it.sizes && it.sizes.length ? it.sizes.map((z, si) => btn(it, si)).join('') : btn(it, null)).join('') : ''}</div></div>
+  <div class="card poscart"><h3 class="disp">Ticket</h3>${POS.cart.map((l, i) => `<div class="posl"><span class="n">${esc(posName(l))}</span><span class="q"><button onclick="posQty(${i},-1)">−</button><b>${l.qty}</b><button onclick="posQty(${i},1)">+</button></span><b style="min-width:62px;text-align:right">${mny(posUnit(l) * l.qty)}</b></div>`).join('') || '<div class="none">Toca un producto para añadirlo</div>'}
+  <div class="r" style="display:flex;justify-content:space-between;margin:12px 0;font:900 26px 'Anton',Impact,sans-serif"><span>TOTAL</span><span>${mny(total)}</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">${pays.map(p => `<button class="bt ${p === POS.pay ? 'bt-y' : 'bt-d'} sm" onclick="posPay('${esc(p)}')">${esc(p)}</button>`).join('')}</div>
+  <button class="bt bt-g" style="width:100%" ${POS.cart.length ? '' : 'disabled'} onclick="posCharge()">${I('print')}Cobrar e imprimir</button>
+  ${POS.cart.length ? `<button class="bt bt-d sm" style="width:100%;margin-top:8px" onclick="posClear()">Vaciar</button>` : ''}</div></div>`;
+}
+async function posCharge() {
+  if (!POS.cart.length) return;
+  const items = POS.cart.map(l => ({ id: l.id, qty: l.qty, size: l.size || 0, meat: l.meat, sauce: l.sauce, drink: l.drink, extra: !!l.extra, notes: l.notes }));
+  try {
+    const r = await A('/api/admin/sale', J('POST', { items, pay: POS.pay }));
+    S.orders.unshift(r.order); POS.cart = []; toast('Venta ' + r.order.id + ' · ' + eur(r.order.total));
+    renderView.force = true; renderView(); autoPrintTicket(r.order.id);
+  } catch (e) { toast(e.message); }
 }
 
 /* ================= HISTORIAL ================= */
@@ -569,6 +661,7 @@ const DN = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'S�
 function vSettings(v) {
   const s = S.settings;
   v.innerHTML = `<div class="card"><h3 class="disp">Negocio</h3><div class="grid2"><div><label class="lb">NOMBRE</label><input class="fld" id="s_name" value="${esc(s.name)}" oninput="markDirty()"></div><div><label class="lb">TELÉFONO</label><input class="fld" id="s_phone" value="${esc(s.phone)}" oninput="markDirty()"></div><div><label class="lb">DIRECCIÓN</label><input class="fld" id="s_addr" value="${esc(s.address)}" oninput="markDirty()"></div><div><label class="lb">AVISO EN LA WEB (opcional)</label><input class="fld" id="s_banner" value="${esc(s.banner || '')}" placeholder="Ej: Hoy cerramos a las 22:00" oninput="markDirty()"></div></div></div>
+  <div class="card"><h3 class="disp">Datos fiscales del ticket</h3><p style="color:#9a9a9a;font-size:13px;margin-bottom:10px">Salen en todos los tickets (NIF, email…). Los tickets de la Caja salen como “Factura simplificada”.</p><div class="grid2"><div><label class="lb">NOMBRE EN EL TICKET</label><input class="fld" id="s_legalName" value="${esc(s.legalName || '')}" placeholder="King Kebab" oninput="markDirty()"></div><div><label class="lb">NIF / NIE</label><input class="fld" id="s_nif" value="${esc(s.nif || '')}" oninput="markDirty()"></div><div><label class="lb">EMAIL</label><input class="fld" id="s_email" value="${esc(s.email || '')}" oninput="markDirty()"></div><div><label class="lb">DIRECCIÓN EN EL TICKET</label><input class="fld" id="s_legalAddr" value="${esc(s.legalAddr || '')}" placeholder="Plaza el Parque, 1, 26140 Lardero, La Rioja, Spain" oninput="markDirty()"></div><div><label class="lb">IVA % (incluido en los precios)</label><input class="fld" id="s_vat" inputmode="decimal" value="${numStr(Number.isFinite(s.vat) ? s.vat : 10)}" oninput="markDirty()"></div></div></div>
   <div class="card"><h3 class="disp">Horario</h3><p style="color:#9a9a9a;font-size:13px;margin-bottom:10px">Formato: <b>13:00-16:00, 18:30-24:00</b>. Déjalo vacío si ese día cierras.</p><div class="grid2">${[1, 2, 3, 4, 5, 6, 0].map(d => `<div><label class="lb">${DN[d].toUpperCase()}</label><input class="fld" id="s_h${d}" value="${esc((s.hours || {})[d] || '')}" oninput="markDirty()"></div>`).join('')}</div></div>
   <div class="card"><h3 class="disp">Opciones de pedido</h3><div class="grid2"><div><label class="lb">PRECIO “EXTRA CARNE / QUESO” €</label><input class="fld" id="s_extra" inputmode="decimal" value="${numStr(s.extraPrice)}" oninput="markDirty()"></div><div><label class="lb">CARNES (separadas por coma)</label><input class="fld" id="s_meats" value="${esc((s.meats || []).join(', '))}" oninput="markDirty()"></div><div><label class="lb">SALSAS</label><input class="fld" id="s_sauces" value="${esc((s.sauces || []).join(', '))}" oninput="markDirty()"></div><div><label class="lb">BEBIDAS (menús)</label><input class="fld" id="s_drinks" value="${esc((s.drinks || []).join(', '))}" oninput="markDirty()"></div><div><label class="lb">FORMAS DE PAGO</label><input class="fld" id="s_pays" value="${esc((s.payments || []).join(', '))}" oninput="markDirty()"></div></div>
   <label class="acc" style="margin-top:14px;display:inline-flex"><span class="sw"><input type="checkbox" id="s_auto" ${s.autoApproveReviews ? 'checked' : ''} onchange="markDirty()"><i></i></span>Publicar opiniones automáticamente (sin revisar)</label></div>
@@ -579,7 +672,7 @@ async function saveSettings() {
   const g = id => $('#' + id).value, hours = {}; for (let d = 0; d < 7; d++) hours[d] = g('s_h' + d);
   const ex = parseFloat(g('s_extra').replace(',', '.')); if (!Number.isFinite(ex) || ex < 0) return toast('Precio extra no válido');
   try {
-    const r = await A('/api/admin/settings', J('PUT', { name: g('s_name'), phone: g('s_phone'), address: g('s_addr'), banner: g('s_banner'), extraPrice: ex, meats: g('s_meats'), sauces: g('s_sauces'), drinks: g('s_drinks'), payments: g('s_pays'), hours, autoApproveReviews: $('#s_auto').checked }));
+    const r = await A('/api/admin/settings', J('PUT', { name: g('s_name'), phone: g('s_phone'), address: g('s_addr'), banner: g('s_banner'), extraPrice: ex, legalName: g('s_legalName'), nif: g('s_nif'), email: g('s_email'), legalAddr: g('s_legalAddr'), vat: parseFloat(g('s_vat').replace(',', '.')), meats: g('s_meats'), sauces: g('s_sauces'), drinks: g('s_drinks'), payments: g('s_pays'), hours, autoApproveReviews: $('#s_auto').checked }));
     S.settings = r.settings; setDirty(false); toast('Ajustes guardados'); rerender();
   } catch (e) { toast(e.message); }
 }
