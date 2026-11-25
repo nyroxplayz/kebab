@@ -442,14 +442,14 @@ function autoPrintTicket(id) {                   // impresión directa (auto-tic
 /* ================= CAJA (venta en mostrador) ================= */
 let POS = { cart: [], cat: null, pay: null };
 const mny = n => (+n).toFixed(2).replace('.', ',') + '€';
-function posUnit(l) { const it = S.cats.flatMap(c => c.items).find(x => x.id === l.id); if (!it) return 0; const base = it.sizes && it.sizes.length ? (it.sizes[l.size || 0] || it.sizes[0]).price : it.price; return base + (l.extra ? (S.settings.extraPrice || 0) : 0); }
+function posUnit(l) { const it = S.cats.flatMap(c => c.items).find(x => x.id === l.id); if (!it) return 0; const base = it.sizes && it.sizes.length ? (it.sizes[l.size || 0] || it.sizes[0]).price : it.price; return base + (l.extra ? (S.settings.extraPrice || 0) : 0) + (l.queso ? (S.settings.extraPrice || 0) : 0); }
 function posName(l) {
   const it = S.cats.flatMap(c => c.items).find(x => x.id === l.id); if (!it) return '?';
   const o = []; if (it.sizes && it.sizes.length) o.push((it.sizes[l.size || 0] || it.sizes[0]).label);
-  if (l.meat) o.push(l.meat); if (l.sauce && l.sauce.length) o.push(l.sauce.join(' + ')); if (l.drink) o.push(l.drink); if (l.extra) o.push('Extra'); if (l.notes) o.push('“' + l.notes + '”');
+  if (l.meat) o.push(l.meat); if (l.sauce && l.sauce.length) o.push(l.sauce.join(' + ')); if (l.drink) o.push(l.drink); if (l.extra) o.push('Extra'); if (l.queso) o.push('Queso extra'); if (l.sin && l.sin.length) o.push('Sin ' + l.sin.map(x => x.toLowerCase()).join(', ')); if (l.notes) o.push('“' + l.notes + '”');
   return it.name + (o.length ? ' · ' + o.join(', ') : '');
 }
-const posKey = l => JSON.stringify([l.id, l.size || 0, l.meat || '', l.sauce || [], l.drink || '', !!l.extra, l.notes || '']);
+const posKey = l => JSON.stringify([l.id, l.size || 0, l.meat || '', l.sauce || [], l.drink || '', !!l.extra, !!l.queso, l.sin || [], l.notes || '']);
 function posPush(l) { l.qty = 1; const k = posKey(l), ex = POS.cart.find(x => posKey(x) === k); if (ex) ex.qty++; else POS.cart.push(l); renderView.force = true; renderView(); }
 function posTap(id, size) {
   const it = S.cats.flatMap(c => c.items).find(x => x.id === id); if (!it) return;
@@ -464,7 +464,8 @@ function posOpts(it, size) {
   ${it.opts.meat ? sel('po_meat', 'CARNE', st.meats || []) : ''}
   ${it.opts.sauce ? `<label class="lb" style="margin-top:8px">SALSAS</label><div style="display:flex;flex-wrap:wrap;gap:8px">${(st.sauces || []).map((x, i) => `<label class="acc" style="display:inline-flex"><input type="checkbox" class="po_s" value="${esc(x)}"> ${esc(x)}</label>`).join('')}</div>` : ''}
   ${it.opts.drink ? sel('po_drink', 'BEBIDA', st.drinks || []) : ''}
-  ${it.opts.extra ? `<label class="acc" style="display:inline-flex;margin-top:10px"><input type="checkbox" id="po_extra"> Extra (+${mny(st.extraPrice || 0)})</label>` : ''}
+  ${it.opts.extra ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><label class="acc" style="display:inline-flex"><input type="checkbox" id="po_extra"> Extra (+${mny(st.extraPrice || 0)})</label><label class="acc" style="display:inline-flex"><input type="checkbox" id="po_queso"> Queso extra (+${mny(st.extraPrice || 0)})</label></div>` : ''}
+  ${it.opts.meat ? `<label class="lb" style="margin-top:10px">SIN</label><div style="display:flex;flex-wrap:wrap;gap:8px">${['Cebolla', 'Lechuga', 'Tomate', 'Maíz'].map(x => `<label class="acc" style="display:inline-flex"><input type="checkbox" class="po_sin" value="${x}"> Sin ${x.toLowerCase()}</label>`).join('')}</div>` : ''}
   <label class="lb" style="margin-top:8px">NOTA (opcional)</label><input class="fld" id="po_note" maxlength="100">
   <div class="row" style="margin-top:14px;gap:8px"><button class="bt bt-d" style="flex:1" id="po_no">Cancelar</button><button class="bt bt-y" style="flex:1" id="po_ok">Añadir</button></div></div>`;
   document.body.appendChild(w);
@@ -474,7 +475,8 @@ function posOpts(it, size) {
     if (it.opts.meat) l.meat = w.querySelector('#po_meat').value;
     if (it.opts.sauce) l.sauce = [...w.querySelectorAll('.po_s:checked')].map(x => x.value);
     if (it.opts.drink) l.drink = w.querySelector('#po_drink').value;
-    if (it.opts.extra) l.extra = w.querySelector('#po_extra').checked;
+    if (it.opts.extra) { l.extra = w.querySelector('#po_extra').checked; l.queso = w.querySelector('#po_queso').checked; }
+    if (it.opts.meat) l.sin = [...w.querySelectorAll('.po_sin:checked')].map(x => x.value);
     const n = w.querySelector('#po_note').value.trim(); if (n) l.notes = n;
     w.remove(); posPush(l);
   };
@@ -503,7 +505,7 @@ function vPos(v) {
 }
 async function posCharge() {
   if (!POS.cart.length) return;
-  const items = POS.cart.map(l => ({ id: l.id, qty: l.qty, size: l.size || 0, meat: l.meat, sauce: l.sauce, drink: l.drink, extra: !!l.extra, notes: l.notes }));
+  const items = POS.cart.map(l => ({ id: l.id, qty: l.qty, size: l.size || 0, meat: l.meat, sauce: l.sauce, drink: l.drink, extra: !!l.extra, queso: !!l.queso, sin: l.sin, notes: l.notes }));
   try {
     const r = await A('/api/admin/sale', J('POST', { items, pay: POS.pay }));
     S.orders.unshift(r.order); POS.cart = []; toast('Venta ' + r.order.id + ' · ' + eur(r.order.total));
