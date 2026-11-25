@@ -53,6 +53,9 @@ export class KitchenDO {
 
 export default {
   async fetch(request, env) {
+    // Verificación de Google Search Console: tiene que responder 200 directo (sin redirección a /archivo sin .html)
+    if (new URL(request.url).pathname === '/google8dcd61373332ffba.html')
+      return new Response('google-site-verification: google8dcd61373332ffba.html', { headers: { 'content-type': 'text/html; charset=utf-8' } });
     // Solo llegan aquí /api/* y /uploads/* (ver wrangler.toml: run_worker_first). El resto lo sirve Cloudflare como archivos estáticos.
     return env.KK.get(env.KK.idFromName('main')).fetch(request);
   },
