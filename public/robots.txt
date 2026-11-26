@@ -1,5 +1,6 @@
 User-agent: *
-Disallow: /admin
+Allow: /
+Allow: /api/public
 Disallow: /api/
 
 Sitemap: https://kingkebablardero.es/sitemap.xml
