@@ -312,7 +312,7 @@ select.fld option{background:#171717}
 #rStars button.on{color:var(--yel)}#rStars button:hover{transform:scale(1.15) rotate(-6deg)}
 .rform .fld{margin-bottom:10px}
 .rform .ctx{display:none;background:#8ff0bd;color:var(--ink);border-radius:10px;padding:8px 12px;font-size:13px;margin-bottom:12px;font-weight:800}
-.seo{max-width:900px;margin:40px auto 10px;padding:0 18px;color:var(--ink)}.seo h2{font-family:'Anton',Impact,sans-serif;font-size:clamp(1.6rem,5vw,2.4rem);line-height:1.05;margin:0 0 10px;text-transform:uppercase}.seo h2:not(:first-child){margin-top:24px}.seo h3{font-size:1.05rem;margin:18px 0 4px}.seo p{margin:0 0 10px;line-height:1.55;font-size:.98rem}.seo a{color:var(--ink);font-weight:800}.seo-cats,.seo-horas{list-style:none;padding:0;margin:0 0 10px;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.92rem}.seo-horas{flex-direction:column;gap:2px;max-width:420px}.seo-horas li{display:flex;justify-content:space-between;gap:12px}.seo-cats a{font-weight:700}
+.seo{background:var(--ink);color:#999;padding:22px 16px 0;font-size:13px;line-height:1.55}.seo-in{max-width:1100px;margin:0 auto;columns:3 260px;column-gap:32px;border-top:1px solid #2a2a2a;padding-top:20px;text-align:left}.seo h2{break-after:avoid}.seo h2:not(:first-child){margin-top:14px}.seo-cats,.seo-horas{break-inside:avoid}.seo h2{font:700 13px/1.3 'Plus Jakarta Sans',system-ui,sans-serif;color:#ccc;margin:0 0 6px;text-transform:none;letter-spacing:0}.seo p{margin:0 0 8px}.seo a{color:#ccc;text-decoration:underline;font-weight:600}.seo-cats,.seo-horas{list-style:none;padding:0;margin:0 0 6px;display:flex;flex-wrap:wrap;gap:2px 10px}.seo-horas{flex-direction:column;gap:1px;max-width:340px}.seo-horas li{display:flex;justify-content:space-between;gap:10px}@media(max-width:600px){.seo-in{columns:1}}
 </style>
 </head>
 <body>
@@ -436,7 +436,9 @@ select.fld option{background:#171717}
   <div class="info" id="infoBoxes"></div>
 </div></section>
 
-<section class="seo" id="sobre" aria-label="Sobre King Kebab Lardero">
+
+<div class="foot-big disp" aria-hidden="true">King Kebab</div>
+<section class="seo" id="sobre" aria-label="Sobre King Kebab Lardero"><div class="seo-in">
   <h2>Nuestra carta</h2>
   <p>Bienvenido a King Kebab Lardero, tu restaurante de kebab en Lardero, La Rioja. Descubre nuestra carta y disfruta de una selección de kebabs, dürüms y menús. Consulta nuestros platos, precios, horarios y opciones de pedido directamente desde nuestra página web.</p>
   <p>¿Buscas un kebab en Lardero? Descubre todo lo que King Kebab Lardero tiene para ofrecerte. <a href="#menu">Ver la carta de King Kebab Lardero</a>.</p>
@@ -448,8 +450,7 @@ select.fld option{background:#171717}
   <h2>Horarios y ubicación</h2>
   <p>King Kebab Lardero · Plaza del Parque 1, 26140 Lardero, La Rioja · Teléfono <a href="tel:+34941104016">941 10 40 16</a>.</p>
   <ul id="seoHoras" class="seo-horas"></ul>
-</section>
-<div class="foot-big disp" aria-hidden="true">King Kebab</div>
+</div></section>
 <footer class="ftr" id="ftr"></footer>
 <button id="lastChip" class="bt bt-yel chip-last" onclick="showDone()"><svg class="ic"><use href="#i-bag"/></svg><span></span></button>
 
